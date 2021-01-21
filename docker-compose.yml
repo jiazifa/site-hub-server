@@ -1,0 +1,24 @@
+version: '3'
+
+services: 
+    redis:
+        image: redis
+        restart: "${DOCKER_RESTART_POLICY:-unless-stopped}"
+        stop_grace_period: "${DOCKER_STOP_GRACE_PERIOD:-3s}"
+        expose:
+            - 6379 # 端口不暴露给主机，只暴露给其他服务。
+        
+    site-server:
+        build: .
+        depends_on: 
+            - redis
+        ports:
+            - 6000:5000 # 绑定容器的5000端口到主机的6000端口
+        restart: "${DOCKER_RESTART_POLICY:-unless-stopped}"
+        stop_grace_period: "${DOCKER_STOP_GRACE_PERIOD:-3s}"
+        volumes:
+            - ~/site-server:/app/disk
+        command: './scripts/start_server.sh'
+
+networks: 
+    site:
