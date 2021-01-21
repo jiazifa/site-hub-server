@@ -13,11 +13,11 @@ services:
         depends_on: 
             - redis
         ports:
-            - 6000:5000 # 绑定容器的5000端口到主机的6000端口
+            - 6001:5000 # 绑定容器的5000端口到主机的6001端口
         restart: "${DOCKER_RESTART_POLICY:-unless-stopped}"
         stop_grace_period: "${DOCKER_STOP_GRACE_PERIOD:-3s}"
         volumes:
-            - ~/site-server:/app/disk
+            - ~/datas/site-server:/app/disk
         command: './scripts/start_server.sh'
 
 networks: 
