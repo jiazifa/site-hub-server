@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Union, List, Union
 """
 Helper functions
 """
@@ -49,7 +49,7 @@ class PageInfo:
         self.offset = (page - 1) * limit
 
 
-def get_page_info() -> Optional[PageInfo]:
+def get_page_info() -> Union[PageInfo, None]:
     """  尝试从当前服务实例中获得附加的页面实例
     g: flask 的 g 对象
     Return:
@@ -58,3 +58,18 @@ def get_page_info() -> Optional[PageInfo]:
     from flask import g
 
     return getattr(g, "pageinfo", None)
+
+
+def valid_require_params(keys: List[str],
+                         params: Dict[str, Any]) -> Union[str, None]:
+    """
+    验证必要参数
+    keys: 必须的参数
+    params: 请求的参数
+    Return:
+        如果缺失了参数，会将缺失的参数返回
+    """
+    for k in keys:
+        if k not in params:
+            return k
+    return None
