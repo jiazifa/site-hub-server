@@ -1,8 +1,9 @@
 from typing import Union, List, Any, Dict
 from flask import Blueprint
-from common import get_logger, parse_params
+from common import get_logger
 from model.website import Category, WebSite
-from app.utils import db, NoResultFound, MultipleResultsFound, CommonError, ResponseErrorType, response_success
+from app.utils import (db, NoResultFound, MultipleResultsFound, CommonError,
+                       ResponseErrorType, response_success, parse_params)
 
 logger = get_logger(__name__)
 
@@ -27,6 +28,7 @@ def create_category():
     keys: List[str] = ["name"]
     if not all([k in params for k in keys]):
         return CommonError.error_enum(ResponseErrorType.REQUEST_ERROR)
+
 
 def get_site(site_id: int):
     # 根据传入的id获得对应的站点信息

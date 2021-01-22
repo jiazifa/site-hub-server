@@ -2,9 +2,10 @@ from typing import Union, List, Dict, Any
 from random import choice
 from flask import Blueprint, request
 from flask.views import MethodView
-from common import get_logger, parse_params
+from common import get_logger
 from model.one_word import OneWord as OneWordModel
-from app.utils import db, CommonError, ResponseErrorType, response_success, NoResultFound, MultipleResultsFound
+from app.utils import (db, CommonError, ResponseErrorType, response_success,
+                       NoResultFound, MultipleResultsFound, parse_params)
 
 logget = get_logger(__name__)
 
