@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Dict, Any, Union, List, Union
+from typing import Dict, Any, Union, Union
 """
 Helper functions
 """
@@ -58,18 +58,3 @@ def get_page_info() -> Union[PageInfo, None]:
     from flask import g
 
     return getattr(g, "pageinfo", None)
-
-
-def valid_require_params(keys: List[str],
-                         params: Dict[str, Any]) -> Union[str, None]:
-    """
-    验证必要参数
-    keys: 必须的参数
-    params: 请求的参数
-    Return:
-        如果缺失了参数，会将缺失的参数返回
-    """
-    for k in keys:
-        if k not in params:
-            return k
-    return None

@@ -3,9 +3,10 @@ from datetime import datetime
 from sqlalchemy import Column, String, SMALLINT, TEXT, INTEGER, Sequence
 from common import get_random_num, getmd5, get_unix_time_tuple
 from app.utils import db
+from model.base import BaseModel
 
 
-class User(db.Model):
+class User(db.Model, BaseModel):
     id = Column(INTEGER, primary_key=True)
     identifier = Column(String(64), nullable=True, comment="用户的唯一标识符")
     sex = Column(SMALLINT, nullable=True, default=0, comment="0 未设置 1 男性 2 女性")
@@ -103,8 +104,7 @@ class User(db.Model):
         return payload
 
 
-class LoginRecordModel(db.Model):
-    __tablename__ = "bao_login_record"
+class LoginRecordModel(db.Model, BaseModel):
 
     record_id = Column(
         INTEGER,

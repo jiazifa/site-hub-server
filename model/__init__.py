@@ -7,7 +7,6 @@ from model.one_word import OneWord  # noqa
 
 logger = get_logger(__file__)
 
-
 def init_app(app: Flask):
     @app.before_first_request
     def create_all_models():

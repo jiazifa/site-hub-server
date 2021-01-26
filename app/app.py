@@ -11,6 +11,7 @@ __root_dir = os.path.dirname(os.path.abspath(__name__))
 
 logger = get_logger(__name__)
 
+
 def app_env_log(app: Flask):
     mode_: str = "开发环境"
     if app.debug == False:
@@ -25,6 +26,9 @@ def create_app() -> Flask:
                 template_folder="templates")
     # 应用配置文件
     app.config.from_object(config)
+    if hasattr(config, "TESTING"):
+        app.is_testing = bool(getattr(config, "TESTING"))
+
     app_env_log(app)
     # 配置数据库
     model.init_app(app)

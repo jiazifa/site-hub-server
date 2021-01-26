@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from typing import Union, Any, Callable, Tuple, Dict
+from typing import Union, Any, Callable, Tuple, Dict, List
 from functools import wraps
-from flask import request, Request, g, current_app
+from flask import request, Request, g, current_app, session
 from app.utils import (CommonError, ResponseErrorType, redis_client, db,
                        parse_params, PageInfo)
 from common import get_date_from_time_tuple, getmd5, get_logger
@@ -21,10 +21,9 @@ def login_require(func: Callable):
     def decorator_view(*args, **kwargs):
         user_or_error: any = get_user_from_request(request, True)
         if not user_or_error:
-            return CommonError.get_error(40204)
-        if not matched_encryption(request):
-            return CommonError.get_error_by_enum(
-                ResponseErrorType.NEED_PERMISSION)
+            return CommonError.error_enum(ResponseErrorType.NEED_PERMISSION)
+        # if not matched_encryption(request):
+        #     return CommonError.error_enum(ResponseErrorType.NEED_PERMISSION)
         if isinstance(user_or_error, User):
             g.current_user = user_or_error
         else:
@@ -39,7 +38,7 @@ def get_token_from_request(request: Request) -> Union[str, None]:
     alice: str = "token"
     token: Union[str, None] = params.get(alice)
     if not token:
-        token = db.session.get(alice) or request.cookies.get(alice)
+        token = session.get(alice) or request.cookies.get(alice)
     if not token:
         token = request.headers.get(alice)
     return token
@@ -56,7 +55,7 @@ def get_user_from_request(
     """
     token: Union[str, None] = get_token_from_request(request)
     if not token and is_force:
-        return CommonError.get_error(40000)
+        return CommonError.error_enum(ResponseErrorType.NEED_PERMISSION)
     if not token:
         return None
 
@@ -109,3 +108,18 @@ def matched_encryption(request: Any) -> bool:
     if full_md5:
         return full_md5.startswith(target)
     return True
+
+
+def valid_require_params(keys: List[str],
+                         params: Dict[str, Any]) -> Union[str, None]:
+    """
+    验证必要参数
+    keys: 必须的参数
+    params: 请求的参数
+    Return:
+        如果缺失了参数，会将缺失的参数返回
+    """
+    for k in keys:
+        if k not in params:
+            return k
+    return None
