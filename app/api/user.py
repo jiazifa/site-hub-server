@@ -1,10 +1,11 @@
-from typing import Union, Dict, Any
+from typing import Union, Dict, Any, List
 from flask import request, current_app, g, Blueprint
 from app.utils import NoResultFound, MultipleResultsFound, ResponseErrorType, valid_require_params
 from common import (get_logger, get_unix_time_tuple, getmd5, get_random_num,
                     is_phone, is_email)
 from app.utils import (parse_params, session, CommonError, response_success,
-                       login_require, db, redis_client, get_current_user)
+                       login_require, db, redis_client, get_current_user,
+                       get_token_from_request)
 from model.user import User, LoginRecordModel
 
 prefix: str = "user"
@@ -14,22 +15,22 @@ logger = get_logger(__name__)
 
 def register():
     params: Dict[str, Any] = parse_params(request)
-    keys: list[str] = ["email", "password"]
-    require_key: str = valid_require_params(keys, params)
+    keys: List[str] = ["email", "password"]
+    require_key: Union[str, None] = valid_require_params(keys, params)
     if require_key:
         return CommonError.error_enum(ResponseErrorType.REQUEST_ERROR)
 
-    email: str = params.get("email")
-    password: str = params.get("password")
+    email: str = params.get("email", "")
+    password: str = params.get("password", "")
     nickname: Union[str, None] = params.get("nickname")
     phone: Union[str, None] = params.get("phone")
     description: Union[str, None] = params.get("description")
-    sex: Union[int, None] = int(params.get("sex") or 0)
+    sex: int = int(params.get("sex") or 0)
 
     query = db.session.query(User).filter_by(email=email)
     is_exisit: bool = db.session.query(query.exists()).scalar()
     if is_exisit:
-        return CommonError.error_toast(ResponseErrorType.REQUEST_ERROR,
+        return CommonError.error_toast(ResponseErrorType.EXISIT,
                                        message="该邮箱已经被注册了")
 
     # 设置种子
@@ -56,13 +57,13 @@ def register():
 
 def login():
     params: Dict[str, Any] = parse_params(request)
-    keys: list[str] = ["email", "password"]
+    keys: List[str] = ["email", "password"]
     require_key: Union[str, None] = valid_require_params(keys, params)
     if require_key:
         return CommonError.error_enum(ResponseErrorType.REQUEST_ERROR)
 
-    email: str = params.get("email")
-    password: str = params.get("password")
+    email: str = params.get("email", "")
+    password: str = params.get("password", "")
     try:
         exsist_user: User = session.query(User).filter_by(
             email=email, password=password).one()
@@ -76,7 +77,7 @@ def login():
         exsist_user.token = token
         db.session.add(record)
         db.session.commit()
-        payload: Dict[str, any] = exsist_user.info_dict
+        payload: Dict[str, Any] = exsist_user.info_dict
         payload.setdefault('token', token)
         return response_success(body=payload)
     except NoResultFound:
@@ -107,9 +108,10 @@ def logout():
     '''
     params = parse_params(request)
     token = get_token_from_request(request)
+    if token:
+        redis_client.client.delete(cache_key, token)
     user: User = get_current_user()
     cache_key: str = user.get_cache_key
-    redis_client.client.delete(cache_key, token)
     user.status = 3
     user.token = ''
     db.session.commit()
@@ -132,17 +134,17 @@ def modify_user_info():
         if is_phone(str(phone)) and len(phone) == 11:
             user.mobilephone = phone
         else:
-            return CommonError.error_toast(msg='手机号码格式错误')
+            return CommonError.error_toast(message='手机号码格式错误')
     if sex:
         if sex in (1, 0):
             user.sex = sex
         else:
-            return CommonError.error_toast(msg='性别设置错误')
+            return CommonError.error_toast(message='性别设置错误')
     if email and not user.email:
         if is_email(email):
             user.email = email
         else:
-            return CommonError.error_toast(msg='邮箱格式错误')
+            return CommonError.error_toast(message='邮箱格式错误')
     user.save(commit=True)
     payload: Dict[str, Any] = user.info_dict
     return response_success(body=payload)

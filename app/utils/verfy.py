@@ -19,7 +19,7 @@ def login_require(func: Callable):
     """
     @wraps(func)
     def decorator_view(*args, **kwargs):
-        user_or_error: any = get_user_from_request(request, True)
+        user_or_error = get_user_from_request(request, True)
         if not user_or_error:
             return CommonError.error_enum(ResponseErrorType.NEED_PERMISSION)
         # if not matched_encryption(request):
@@ -84,7 +84,7 @@ def pages_info_requires(func):
 
 def matched_encryption(request: Any) -> bool:
     if current_app.is_testing:
-        return current_app.is_testing
+        return bool(current_app.is_testing)
     header: Dict[str, str] = dict(request.headers)
     target: str = header.get("V") or ''
 

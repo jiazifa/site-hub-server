@@ -57,4 +57,7 @@ def get_page_info() -> Union[PageInfo, None]:
     """
     from flask import g
 
-    return getattr(g, "pageinfo", None)
+    info = getattr(g, "pageinfo", None)
+    if isinstance(info, PageInfo):
+        return info
+    return None

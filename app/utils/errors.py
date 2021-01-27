@@ -6,6 +6,8 @@ from app.utils.response import response_error
 
 
 class ResponseErrorType(Enum):
+    # 资源已经存在
+    EXISIT = 20100
     # 用户发出的请求有错误
     REQUEST_ERROR = 40000
     # 表示用户没有权限（令牌、用户名、密码错误）
@@ -37,6 +39,7 @@ class CommonError(ApiError):
         header: Union[Dict[str, str], None] = None
     ) -> Tuple[str, int, Dict[str, str]]:
         switcher: Dict[int, str] = {
+            ResponseErrorType.EXISIT.value: "资源已存在",
             ResponseErrorType.REQUEST_ERROR.value: "请求异常",
             ResponseErrorType.NEED_PERMISSION.value: "权限异常，请检查权限",
             ResponseErrorType.FORBIDDEN.value: "禁止访问",

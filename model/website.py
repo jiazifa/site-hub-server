@@ -3,10 +3,11 @@ from datetime import datetime
 from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy import TEXT, INTEGER
 from app.utils import db
+from model.base import BaseModel
 
 
 # 站点模型，一个站点模型可能对应一个分类模型
-class WebSite(db.Model):
+class WebSite(db.Model, BaseModel):
     id = Column(INTEGER, primary_key=True)
     name = Column(String(256), unique=True, nullable=False)
     description = Column(String(516), nullable=True)
@@ -18,7 +19,7 @@ class WebSite(db.Model):
                                backref=db.backref("websites"),
                                lazy=True)
 
-    def __init__(self, name: str, description: str, url: str, thumb: str,
+    def __init__(self, name: str, description: Union[str, None], url: str, thumb: Union[str, None],
                  category: Union['Category', None]):
         self.name = name
         self.description = description
@@ -40,7 +41,7 @@ class WebSite(db.Model):
 
 
 # 分类，与站点属于一对多关系
-class Category(db.Model):
+class Category(db.Model, BaseModel):
     id = Column(INTEGER, primary_key=True)
     name = Column(String(128), nullable=False)
 

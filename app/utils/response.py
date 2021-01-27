@@ -125,7 +125,7 @@ def response_error(
     """
     from flask import request as r
 
-    error_codes = [400, 401, 402, 403, 404, 406, 410, 500]
+    error_codes = [201, 400, 401, 402, 403, 404, 406, 410, 500]
     if any((msg, data)) is None:
         raise ValueError("error Msg can't be None")
     if msg and http_code not in error_codes:

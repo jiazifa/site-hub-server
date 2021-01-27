@@ -1,4 +1,4 @@
-from typing import Optional, List, ClassVar, Text, Dict, Set, Union, Tuple, Iterable
+from typing import Optional, List, ClassVar, Text, Dict, Set, Union, Tuple, Iterable, Sequence
 import os
 import re
 import smtplib
@@ -39,7 +39,7 @@ def force_text(s: Union[str, bytes], encoding="utf-8", errors="strict") -> str:
     return s
 
 
-def sanitize_subject(subject, encoding="utf-8") -> str:
+def sanitize_subject(subject: str, encoding="utf-8") -> str:
     try:
         subject.encode("ascii")
     except UnicodeEncodeError:
@@ -121,9 +121,10 @@ class Connection(object):
 
         if not self.host:
             raise ValueError
+        send_to: List[str] = [str(send) for send in message.send_to]
         self.host.sendmail(
             message.sender,
-            message.send_to,
+            send_to,
             message.as_string(),
         )
 

@@ -14,7 +14,7 @@ DEFAULT_LOGIN_PARAMS = {
 
 def get_token(client, login_params) -> str:
     rv = client.post("/api/user/login", json=login_params)
-    return rv.json["data"]["token"]
+    return str(rv.json["data"]["token"])
 
 
 @pytest.fixture(scope="module")
@@ -33,11 +33,11 @@ def client(app: Flask) -> FlaskClient:
 def token(client) -> str:
     rv = client.post("/api/user/login", json=DEFAULT_LOGIN_PARAMS)
     assert rv.status_code == 200
-    return rv.json["data"]["token"]
+    return str(rv.json["data"]["token"])
 
 
 @pytest.fixture(scope="module")
 def user_id(client) -> str:
     rv = client.post("/api/user/login", json=DEFAULT_LOGIN_PARAMS)
     assert rv.status_code == 200
-    return rv.json["data"]["user_id"]
+    return str(rv.json["data"]["user_id"])

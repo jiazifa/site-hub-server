@@ -7,8 +7,8 @@ from .helper import *
 class TestUser:
     def setup_method(self):
 
-        self._email = DEFAULT_LOGIN_PARAMS.get("email")
-        self._password = DEFAULT_LOGIN_PARAMS.get("password")
+        self._email = DEFAULT_LOGIN_PARAMS.get("email", "")
+        self._password = DEFAULT_LOGIN_PARAMS.get("password", "")
 
     def test_register(self, client: FlaskClient):
         params: Dict[str, str] = {
@@ -19,10 +19,13 @@ class TestUser:
         print(rv.json)
         if rv.status_code == 400 and rv.json["msg"] != None:
             return
-        assert rv.status_code == 200
-        body: dict = rv.json["data"]
-        assert body != None
-        assert body["id"] != None
+        if rv.status_code == 200:
+            body: dict = rv.json["data"]
+            assert body != None
+            assert body["id"] != None
+        else:
+            assert rv.status_code == 201
+        
 
     # 测试重复注册接口
     def test_register_on_error(self, client):
@@ -38,7 +41,7 @@ class TestUser:
                              "password": self._password,
                          })
 
-        assert rv.status_code == 400
+        assert rv.status_code != 200
 
     # 测试登录 [账号密码登录]
     def test_login(self, client):

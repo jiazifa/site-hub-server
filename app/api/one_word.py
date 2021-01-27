@@ -35,14 +35,15 @@ class OneWordMethod(MethodView):
                 return CommonError.error_enum(ResponseErrorType.REQUEST_ERROR,
                                               message=toast)
 
-        content: str = params.get("content")
+        content: str = params.get("content", "")
         # 根据content字符判断是否重复
         exists_model: Union[OneWordModel, None] = None
         payload: Dict[str, int] = {}
         try:
             exists_model = db.session.query(OneWordModel).filter_by(
                 content=content).one()
-            payload.setdefault("id", exists_model.id)
+            if exists_model:
+                payload.setdefault("id", exists_model.id)
         except NoResultFound:
             translate: Union[str, None] = params.get("translate")
             picture: Union[str, None] = params.get("picture")

@@ -58,15 +58,15 @@ class User(db.Model, BaseModel):
         Return: 
             用户的实例，如果没有找到则返回None
         """
+        user: Union[User, None] = None
         try:
             if uid:
-                return User.query.filter(User.id == uid).one()
+                user = User.query.filter(User.id == uid).one()
             if token:
-                return User.query.filter(User.token == token).one()
-            return None
+                user = User.query.filter(User.token == token).one()
         except Exception as e:
             print(e)
-            return None
+        return user
 
     @property
     def get_cache_key(self) -> str:

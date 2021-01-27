@@ -1,5 +1,5 @@
 from typing import List, Union, Tuple
-from app.utils import get_logger, celery_app
+from common import get_logger
 from vendor import Mail, Message
 
 logger = get_logger(__name__)

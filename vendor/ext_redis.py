@@ -1,4 +1,4 @@
-from typing import Dict, Any
+from typing import Dict, Any, Union
 from flask import Flask
 from redis import Redis
 
@@ -10,7 +10,7 @@ class FlaskRedis:
     _provider_class: Any
 
     def __init__(self,
-                 app: Flask = None,
+                 app: Union[Flask, None] = None,
                  strict: bool = True,
                  config_key: str = "REDIS_URI",
                  **kwargs):
