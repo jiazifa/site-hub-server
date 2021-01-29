@@ -4,8 +4,11 @@ from app.utils import db
 from common import get_logger
 from model.website import WebSite, Category  # noqa
 from model.one_word import OneWord  # noqa
+from model.permission import Role  # noqa
+from model.user import User, LoginRecordModel # noqa
 
 logger = get_logger(__file__)
+
 
 def init_app(app: Flask):
     @app.before_first_request

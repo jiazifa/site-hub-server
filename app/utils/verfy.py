@@ -7,9 +7,9 @@ from app.utils import (CommonError, ResponseErrorType, redis_client, db,
                        parse_params, PageInfo)
 from common import get_date_from_time_tuple, getmd5, get_logger
 from model.user import User
+from model.permission import PermissionType, Role
 
 logger = get_logger(__name__)
-
 
 def login_require(func: Callable):
     """
@@ -31,6 +31,38 @@ def login_require(func: Callable):
         return func(*args, **kwargs)
 
     return decorator_view
+
+
+def permission_can(user: User, permission: PermissionType) -> bool:
+    key: str = user.role_permission_key
+    permissions: int = redis_client.client.get(key)
+    if not permissions:
+        role = user.role_model()
+        if role:
+            permissions = role.permissions
+            redis_client.client.set(user.role_permission_key, str(permissions))
+
+    can = bool((permissions & permission.value) == permission)
+    return can
+
+
+def permission_require(permission: PermissionType):
+    def decorator(f):
+        @wraps(f)
+        def decorator_view(*args, **kwargs):
+            user: Union[User, None] = g.current_user
+
+            if not user:
+                # 如果没有用户模型，退出
+                return CommonError.error_enum(ResponseErrorType.NEED_PERMISSION)
+            
+            can = permission_can(user, permission)
+            if not can:
+                return CommonError.error_enum(ResponseErrorType.NEED_PERMISSION)
+
+        return decorator_view
+
+    return decorator
 
 
 def get_token_from_request(request: Request) -> Union[str, None]:
@@ -83,6 +115,11 @@ def pages_info_requires(func):
 
 
 def matched_encryption(request: Any) -> bool:
+    """
+    匹配参数加密
+    Return:
+        加密是否匹配
+    """
     if current_app.is_testing:
         return bool(current_app.is_testing)
     header: Dict[str, str] = dict(request.headers)

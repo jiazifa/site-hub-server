@@ -44,15 +44,10 @@ class TestWebsite:
 
         rv = client.post("/api/site/create",
                          json={
-                             "name":
-                             "{}".format(get_random_num(4)),
-                             "url":
-                             "http://www.baidu.com/{}".format(
-                                 get_random_num(6)),
-                             "category_id":
-                             cid,
-                             "token":
-                             token
+                             "name": "{}".format(get_random_num(4)),
+                             "url": "http://www.baidu.com/{}".format(get_random_num(6)),
+                             "category_id": cid,
+                             "token": token
                          })
         if rv.status_code == 200:
             body = rv.json["data"]

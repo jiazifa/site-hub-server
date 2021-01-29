@@ -4,6 +4,7 @@ from sqlalchemy import Column, String, SMALLINT, TEXT, INTEGER, Sequence
 from common import get_random_num, getmd5, get_unix_time_tuple
 from app.utils import db
 from model.base import BaseModel
+from model.permission import Role, RoleType
 
 
 class User(db.Model, BaseModel):
@@ -16,6 +17,7 @@ class User(db.Model, BaseModel):
     description = Column(String(64), nullable=True, comment="个人简介")
     password = Column(String(64), nullable=True)
     token = Column(String(64), nullable=True)
+    role = Column(INTEGER, nullable=True, comment="分配的权限角色类型")
     status = Column(SMALLINT,
                     nullable=True,
                     default=1,
@@ -30,7 +32,8 @@ class User(db.Model, BaseModel):
                  password: Union[str, None] = None,
                  token: Union[str, None] = None,
                  description: Union[str, None] = None,
-                 status: int = 1):
+                 status: int = 1,
+                 role: RoleType = RoleType.USER):
         """  初始化方法
         在注册时使用，其中 email 是必须的
 
@@ -46,6 +49,7 @@ class User(db.Model, BaseModel):
         self.token = token
         self.description = description
         self.sex = sex
+        self.role = role
 
     @classmethod
     def get_user(cls,
@@ -70,7 +74,7 @@ class User(db.Model, BaseModel):
 
     @property
     def get_cache_key(self) -> str:
-        return "sky_user_cache_key_{user_id}".format(user_id=self.id)
+        return "user_cache_key_{user_id}".format(user_id=self.id)
 
     def get_token(self) -> str:
 
@@ -86,6 +90,29 @@ class User(db.Model, BaseModel):
 
         token: str = getmd5('-'.join(content))
         return token
+
+    def role_name(self) -> str:
+        """ 获得用户角色的名称 """
+        return Role.name_of(self.role)
+
+    def role_model(self) -> Union[Role, None]:
+        """
+        获得用户的角色
+        """
+        role: Union[Role, None] = None
+        try:
+            role = Role.query.filter(Role.name == self.role_name).first()
+        except:
+            pass
+        return role
+
+    @property
+    def role_permission_key(self) -> str:
+        """
+        获得用户的权限key
+        """
+        key: str = "user::{}permission_key".format(str(self.id))
+        return key
 
     @property
     def info_dict(self) -> Dict[str, Any]:
