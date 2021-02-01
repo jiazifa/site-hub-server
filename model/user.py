@@ -49,7 +49,7 @@ class User(db.Model, BaseModel):
         self.token = token
         self.description = description
         self.sex = sex
-        self.role = role
+        self.role = role.value
 
     @classmethod
     def get_user(cls,
