@@ -12,7 +12,6 @@ def init_app(app: Flask):
     @app.before_first_request
     def create_all_models():
 
-        db.init_app(app)
         db.create_all(app=app)
 
     @app.after_request

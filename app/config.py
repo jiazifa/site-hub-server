@@ -5,7 +5,7 @@ _here = path.dirname(__name__)
 root_dir = os.path.abspath((os.path.dirname(__file__)))
 workspace = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
-DEBUG = False
+DEBUG = True
 
 TESTING = False
 

@@ -2,7 +2,7 @@
 
 from typing import Dict, Any, Optional
 import logging
-import urllib
+from urllib.parse import urlparse
 import sys
 from app import config
 """
@@ -103,7 +103,7 @@ def parser_url_path_rule1(old: str, replace: str) -> str:
         return old
     if old.startswith('http'):
         return old
-    ret = urllib.parse.urlparse(replace)
+    ret = urlparse(replace)
     _link = str(ret.scheme) + "://" + str(ret.netloc) + old
 
     return _link

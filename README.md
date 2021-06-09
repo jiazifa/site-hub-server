@@ -42,6 +42,11 @@
 
 `poetry run python runner.py` 或其他方式
 
+## 问题
+
+- AttributeError: can't set attribute 
+
+有时候数据库有问题，会有这种情况
 
 ## 目前功能
 

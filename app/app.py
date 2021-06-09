@@ -27,6 +27,7 @@ def create_app() -> Flask:
     app.config.from_object(config)
     app_env_log(app)
     # 配置数据库
+    
     model.init_app(app)
     # 配置redis客户端
     redis_client.init_app(app)
