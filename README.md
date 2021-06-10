@@ -40,7 +40,7 @@
 
 ## 运行
 
-`poetry run python runner.py` 或其他方式
+`poetry run python runner.py` 或 `./scripts/start_server.sh`
 
 ## 问题
 
