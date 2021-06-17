@@ -1,11 +1,14 @@
-from typing import Union
 from datetime import datetime
-from sqlalchemy import Column, String
-from sqlalchemy import TEXT, INTEGER
-from app.utils import db
+from typing import Union
+
+from sqlalchemy import INTEGER, TEXT, Column, String
+
+from app.extensions import db
+
+from .base import BaseModel
 
 
-class OneWord(db.Model):
+class OneWord(db.Model, BaseModel):
     id = Column(INTEGER, primary_key=True)
     # 主体内容
     content = Column(TEXT, nullable=False)

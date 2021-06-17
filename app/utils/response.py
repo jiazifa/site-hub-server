@@ -1,5 +1,6 @@
-from typing import Dict, Tuple, Optional, Union, List, Any
-from flask import jsonify, current_app, request
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+from flask import Response, current_app, jsonify, request
 
 
 def __check_request(method: str = "") -> str:
@@ -47,11 +48,11 @@ def __error_handler(
 
 
 def response_success(
-    body: Any = {},
+    body: Any,
     status_code: int = 200,
     header: Optional[Dict] = None,
     toast: Optional[str] = None,
-) -> Tuple[Dict[str, Any], int, Dict[str, str]]:
+) -> Tuple[Response, int, Dict[str, str]]:
     """返回一个成功的报文
     对返回值进行统一的包装，避免有多种返回值格式
 
@@ -72,16 +73,17 @@ def response_success(
         ValueError: 如果状态码不在200段，则抛出异常; 如果无法将返回值解析为json，则抛出异常
     """
     success_codes = [200, 201, 202, 204]
+    response: Response
     if status_code not in success_codes:
         raise ValueError("statusCode is not in successCodes")
     try:
         result: Dict[str, Any] = {
-            "data": body,
+            "data": body or {},
             "msg": toast or "",
             "code": status_code
         }
         if result:
-            result = jsonify(result)
+            response = jsonify(result)
     except Exception as e:
         current_app.logger.error(e)
         raise ValueError("Unknown body")
@@ -93,7 +95,7 @@ def response_success(
     header = header or {}
     for key in defaultHeader:
         header.setdefault(key, defaultHeader[key])
-    return result, status_code, header
+    return response, status_code, header
 
 
 def response_error(
@@ -101,8 +103,8 @@ def response_error(
     msg: Union[str, None] = None,
     data: Any = None,
     http_code: int = 0,
-    header: Optional[Dict] = None,
-) -> Tuple[str, int, Dict[str, str]]:
+    header: Optional[Dict[str, str]] = None,
+) -> Tuple[Response, int, Dict[str, str]]:
     """  对一个返回错误包装
     包装格式，保持统一
     Args:

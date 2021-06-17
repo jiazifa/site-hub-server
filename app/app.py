@@ -1,21 +1,18 @@
 import os
 from typing import Union
+
 from flask import Flask
-import model
+
+from app import api, model, views
+from app.extensions import login_manager, redis_client
+from app.utils.errors import APIException, HTTPException, UnknownExeception
+from app.utils import get_logger
+
 from . import config
-from common import get_logger
-from app import views, api
-from app.utils import redis_client
 
 __root_dir = os.path.dirname(os.path.abspath(__name__))
 
 logger = get_logger(__name__)
-
-def app_env_log(app: Flask):
-    mode_: str = "开发环境"
-    if app.debug == False:
-        mode_ = "正式环境"
-    logger.info("当前处于{}".format(mode_))
 
 
 def create_app() -> Flask:
@@ -25,13 +22,51 @@ def create_app() -> Flask:
                 template_folder="templates")
     # 应用配置文件
     app.config.from_object(config)
-    app_env_log(app)
+    register_extensions(app)
+    register_blueprints(app)
+    register_errorhandlers(app)
+    register_shellcontext(app)
+    return app
+
+
+def register_extensions(app: Flask):
     # 配置数据库
-    
     model.init_app(app)
     # 配置redis客户端
     redis_client.init_app(app)
+    # 配置用户登录
+    login_manager.init_app(app)
+
+
+def register_blueprints(app: Flask):
     # 配置接口以及视图
     views.init_app(app)
     api.init_app(app)
-    return app
+
+
+def register_errorhandlers(app: Flask):
+    @app.errorhandler(Exception)
+    def handle_with_exeception(error: Exception):
+        if isinstance(error, APIException):
+            return error
+        elif isinstance(error, HTTPException):
+            return APIException(error.code,
+                                error.description,
+                                error_code=error.code *
+                                100 if error.code else 99999)
+        else:
+            # if app.debug:
+            #     import pdb
+            #     pdb.set_trace()
+            return UnknownExeception(message=str(error))
+
+
+def register_shellcontext(app: Flask):
+    ...
+
+
+def config_logger(app: Flask):
+    mode_: str = "开发环境"
+    if app.debug == False:
+        mode_ = "正式环境"
+    logger.info("当前处于{}".format(mode_))

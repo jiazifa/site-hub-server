@@ -1,10 +1,12 @@
 import os
+from typing import Any, Union
 
 import pytest
-from typing import Any, Union
-from flask.testing import FlaskClient
 from flask import Flask
+from flask.testing import FlaskClient
+
 from app import create_app
+
 
 @pytest.fixture(scope="module")
 def app() -> Flask:

@@ -1,19 +1,30 @@
 from flask import Flask
 from flask_sqlalchemy import get_debug_queries
-from app.utils import db
-from common import get_logger
-from model.website import WebSite, Category  # noqa
-from model.one_word import OneWord  # noqa
+
+from app.extensions import db
+from app.utils import get_logger
+
+from .one_word import OneWord  # noqa
+from .rss import RssContentModel, RssModel
+from .user import RoleModel, User
+from .website import Category, WebSite  # noqa
 
 logger = get_logger(__file__)
 
 
+def prepare_data_id_needed():
+    # 准备必要数据
+    ...
+
 def init_app(app: Flask):
+    # 创建表
     @app.before_first_request
     def create_all_models():
-
+        return
         db.create_all(app=app)
+        prepare_data_id_needed()
 
+    # 慢查询检测
     @app.after_request
     def query_time_out(response):
 

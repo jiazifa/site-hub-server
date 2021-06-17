@@ -1,8 +1,13 @@
-from typing import Union, List, Any, Dict
-from flask import Blueprint, request
-from common import get_logger, parse_params
-from model.website import Category, WebSite
-from app.utils import db, NoResultFound, MultipleResultsFound, CommonError, ResponseErrorType, response_success
+from typing import Any, Dict, List, Union
+
+from flask import Blueprint
+
+from app.extensions import MultipleResultsFound, NoResultFound, db
+from app.model.website import Category, WebSite
+from app.utils import response_success
+from app.utils.errors import (NotFoundExeception, ParameterException,
+                              UnknownExeception)
+from app.utils import get_logger, parse_params_from_request
 
 logger = get_logger(__name__)
 
@@ -16,23 +21,46 @@ def get_categories():
     try:
         models = db.session.query(Category).all()
     except NoResultFound:
-        return CommonError.error_enum(type=ResponseErrorType.UNKNOWN_ERROR)
+        return NotFoundExeception()
 
     payload: List[Dict[str, Union[str, int]]] = [{"id": r.id} for r in models]
     return response_success(body=payload)
 
 
 def create_category():
-    params: Dict[str, Any] = parse_params(request)
+    # 创建分类
+    params: Dict[str, Any] = parse_params_from_request()
     keys: List[str] = ["name"]
-    if not all([k in params for k in keys]):
-        return CommonError.error_enum(ResponseErrorType.REQUEST_ERROR)
+    for key in keys:
+        if not params.get(key):
+            raise ParameterException(message="{} 缺失".format(key))
+
+    name: str = params["name"]
+
+    payload: Dict[str, int] = {}
+    exists_model: Union[Category, None] = None
+    try:
+        exists_model = db.session.query(Category).filter_by(name=name)
+        payload.setdefault("id", exists_model.id)
+    except NoResultFound:
+        exists_model = Category(name)
+        db.session.add(exists_model)
+        db.session.commit(exists_model)
+        payload.setdefault("id", exists_model.id)
+    except MultipleResultsFound:
+        exists_model = db.session.query(Category).filter_by(name=name).first()
+        payload.setdefault("id", exists_model.id)
+    else:
+        raise UnknownExeception()
+
+    return response_success(body=payload)
+
 
 def get_site(site_id: int):
     # 根据传入的id获得对应的站点信息
     site: WebSite = WebSite.query.get(site_id)
     if not site:
-        return CommonError.error_enum(ResponseErrorType.NOT_FOUND)
+        raise NotFoundExeception()
 
     payload: Dict[str, Union[str, int]] = {
         "id": site.id,
@@ -45,7 +73,7 @@ def get_site(site_id: int):
 
 def get_site_by_categories():
     # 根据传入的分类id，来获得分页的网站数据
-    params: Dict[str, Any] = parse_params(request)
+    params: Dict[str, Any] = parse_params_from_request()
     category_ids: List[int] = params.get("category_ids") or []
     models: List[WebSite] = db.session.query(WebSite).filter(
         WebSite.category_id.in_(category_ids)).all() or []

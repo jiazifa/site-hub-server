@@ -1,6 +1,6 @@
-from typing import List, Tuple, Any
+from typing import Any, List, Tuple
 
-from flask import Flask, Blueprint
+from flask import Blueprint, Flask
 
 
 def regist_blueprint_to_app(app: Flask, info: Tuple[Blueprint, str]):
@@ -11,9 +11,9 @@ def regist_blueprint_to_app(app: Flask, info: Tuple[Blueprint, str]):
 def init_app(app: Flask):
     flush_blueprint: List[Blueprint]
     info: Tuple[Blueprint, str]
-    from . import one_word
-    from . import site
-    modules: List[Any] = [one_word, site]
+    from . import file as file_
+    from . import one_word, rss, site, user
+    modules: List[Any] = [one_word, site, file_, user, rss]
     for m in modules:
         info = (m.api, m.prefix)
         regist_blueprint_to_app(app, info)

@@ -1,4 +1,5 @@
-from typing import List, Union, Tuple
+from typing import List, Tuple, Union
+
 from common import get_logger
 from tasks import celery_app
 from vendor import Mail, Message

@@ -14,6 +14,8 @@ Flask-Migrate = "^2.5.3"
 redis = "^3.5.3"
 pymysql = "^1.0.2"
 celery = "4.4.2"
+Flask-WTF = "^0.15.1"
+Flask-Login = "^0.5.0"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.790"
@@ -21,6 +23,7 @@ flake8 = "^3.8.0"
 yapf = "^0.30.0"
 pytest = "^6.2.1"
 rope = "^0.18.0"
+isort = "^5.9.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

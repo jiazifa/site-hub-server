@@ -1,15 +1,27 @@
-from typing import Union, List, Dict, Any
 from random import choice
-from flask import Blueprint, request
+from typing import Any, Dict, List, Union
+
+from flask import Blueprint
 from flask.views import MethodView
-from common import get_logger, parse_params
-from model.one_word import OneWord as OneWordModel
-from app.utils import db, CommonError, ResponseErrorType, response_success, NoResultFound, MultipleResultsFound
+from wtforms import StringField
+from wtforms.validators import Required
+
+from app.extensions import (FlaskAPIForm, MultipleResultsFound, NoResultFound,
+                            db)
+from app.model.one_word import OneWord as OneWordModel
+from app.utils import response_success, get_logger, parse_params_from_request
+from app.utils.errors import (NotFoundExeception, ParameterException,
+                              UnknownExeception)
 
 logget = get_logger(__name__)
 
 prefix: str = "oneword"
 api: Blueprint = Blueprint(prefix, __name__)
+
+
+class _OneWrodForm(FlaskAPIForm):
+
+    content = StringField('content', validators=[Required()])
 
 
 class OneWordMethod(MethodView):
@@ -20,21 +32,17 @@ class OneWordMethod(MethodView):
         list_result: Union[List[OneWordModel],
                            None] = db.session.query(OneWordModel).all()
         if not list_result:
-            return CommonError.error_toast(ResponseErrorType.NOT_FOUND,
-                                           message="资源未找到")
+            raise NotFoundExeception(message="未发现资源")
         result: OneWordModel = choice(list_result)
         return response_success(body=result.content)
 
     def post(self):
-        params: Dict[str, Any] = parse_params(request)
-        keys: List[str] = ["content"]
-        for key in keys:
-            if not params.get(key):
-                toast: str = "key: {} not found in params".format(key)
-                return CommonError.error_enum(ResponseErrorType.REQUEST_ERROR,
-                                              message=toast)
+        contentForm = _OneWrodForm()
+        if not contentForm.validate():
+            raise ParameterException(unique_data=contentForm.errors)
+        params: Dict[str, Any] = parse_params_from_request()
 
-        content: str = params.get("content")
+        content: str = contentForm.content.data
         # 根据content字符判断是否重复
         exists_model: Union[OneWordModel, None] = None
         payload: Dict[str, int] = {}
@@ -55,6 +63,9 @@ class OneWordMethod(MethodView):
         except MultipleResultsFound:
             exists_model = db.session.query(OneWordModel).filter_by(
                 content=content).first()
+            payload.setdefault("id", exists_model.id)
+        except Exception as e:
+            raise e
 
         return response_success(body=payload)
 
@@ -65,9 +76,9 @@ def get_word_by_id(word_id: int):
 
 
 def setup_urls(api: Blueprint):
-    one_word_view_func = OneWordMethod.as_view("one_word")
+    one_word_view_func = OneWordMethod.as_view("one_word/")
     # 通过id获取具体的句子或修改
-    api.add_url_rule(rule="/<int:word_id>",
+    api.add_url_rule(rule="/<int:word_id>/",
                      view_func=get_word_by_id,
                      methods=["GET"])
 

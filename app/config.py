@@ -11,6 +11,10 @@ TESTING = False
 
 # 开启跨站请求伪造防护
 SECRET_KEY = os.environ.get("SECRET_KEY") or os.urandom(24)
+# 关闭 csrf 保护机制
+WTF_CSRF_ENABLED=False
+# 关闭国际化文案
+WTF_I18N_ENABLED = False
 """SQLALCHEMY配置"""
 SQLALCHEMY_DATABASE_URI = os.environ.get(
     "DATABASE_URI", "sqlite:///" + os.path.join(workspace, "test.db"))
@@ -46,8 +50,10 @@ CELERY_RESULT_SERIALIZER = "json"
 
 CELERY_ACCEPT_CONTENT = ["json"]
 
+""" 配置文件上传目录 """
+UPLOAD_FLODER = ""
 try:
-    from local_settings import * # noqa
+    from local_settings import *  # noqa
 except ImportError:
     print("导入错误")
     pass

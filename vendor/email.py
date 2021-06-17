@@ -1,19 +1,20 @@
-from typing import Optional, List, ClassVar, Text, Dict, Set, Union, Tuple, Iterable
 import os
 import re
 import smtplib
 import unicodedata
-from smtplib import SMTP
+from contextlib import contextmanager
 from email import charset, policy
 from email.encoders import encode_base64
-from email.mime.base import MIMEBase
-from email.mime.text import MIMEText
 from email.header import Header
-from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
-from email.utils import formatdate, formataddr, make_msgid, parseaddr
+from email.mime.base import MIMEBase
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.utils import formataddr, formatdate, make_msgid, parseaddr
+from smtplib import SMTP
 from time import time
-from contextlib import contextmanager
+from typing import (ClassVar, Dict, Iterable, List, Optional, Set, Text, Tuple,
+                    Union)
 
 
 def force_text(s: Union[str, bytes], encoding="utf-8", errors="strict") -> str:

@@ -1,5 +1,5 @@
-from tasks import celery_app
 from app import config
+from tasks import celery_app
 
 celery_app.config_from_object(config)
 

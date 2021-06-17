@@ -1,5 +1,7 @@
 import os
+
 from flask.testing import FlaskClient
+
 from .helper import *
 
 
@@ -19,7 +21,7 @@ class TestOneWord:
 
     def test_get_word_by_id(self, client: FlaskClient):
 
-        rv = client.get("api/oneword/1")
+        rv = client.get("api/oneword/1/")
         assert rv.status_code == 200
         body: str = rv.json["data"]
         assert body != None
